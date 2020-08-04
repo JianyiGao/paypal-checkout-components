@@ -250,7 +250,8 @@ export type ButtonPropsInputs = {|
     csp? : {|
         nonce? : string
     |},
-    content? : ContentType
+    content? : ContentType,
+    enableFunding? : $ReadOnlyArray<$Values<typeof FUNDING>>
 |};
 
 export const DEFAULT_STYLE = {
@@ -422,7 +423,8 @@ export function normalizeButtonProps(props : ?ButtonPropsInputs) : RenderButtonP
         personalization,
         clientAccessToken,
         content,
-        wallet
+        wallet,
+        enableFunding = []
     } = props;
 
     const { country, lang } = locale;
@@ -460,7 +462,7 @@ export function normalizeButtonProps(props : ?ButtonPropsInputs) : RenderButtonP
             throw new Error(`Invalid funding source: ${ fundingSource }`);
         }
 
-        if (!isFundingEligible(fundingSource, { platform, fundingSource, fundingEligibility, components, onShippingChange })) {
+        if (!isFundingEligible(fundingSource, { platform, fundingSource, fundingEligibility, components, onShippingChange, enableFunding })) {
             throw new Error(`Funding Source not eligible: ${ fundingSource }`);
         }
     }
@@ -469,5 +471,5 @@ export function normalizeButtonProps(props : ?ButtonPropsInputs) : RenderButtonP
     wallet = getDefaultWallet(fundingEligibility, wallet);
 
     return { clientID, fundingSource, style, locale, remembered, env, fundingEligibility, platform, clientAccessToken,
-        buttonSessionID, commit, sessionID, nonce, components, onShippingChange, personalization, content, wallet };
+        buttonSessionID, commit, sessionID, nonce, components, onShippingChange, personalization, content, wallet, enableFunding };
 }

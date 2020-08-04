@@ -4,7 +4,8 @@
 
 import { getLogger, getLocale, getClientID, getEnv, getIntent, getCommit, getVault, getDisableFunding, getDisableCard,
     getMerchantID, getPayPalDomainRegex, getCurrency, getSDKMeta, getCSPNonce, getBuyerCountry, getClientAccessToken, getPlatform,
-    getPartnerAttributionID, getCorrelationID, getEnableThreeDomainSecure, getDebug, getComponents, getStageHost, getAPIStageHost, getPayPalDomain, getUserIDToken, getClientMetadataID, getAmount } from '@paypal/sdk-client/src';
+    getPartnerAttributionID, getCorrelationID, getEnableThreeDomainSecure, getDebug, getComponents, getStageHost, getAPIStageHost,
+    getPayPalDomain, getUserIDToken, getClientMetadataID, getAmount, getSDKQueryParam } from '@paypal/sdk-client/src';
 import { rememberFunding, getRememberedFunding, getRefinedFundingEligibility } from '@paypal/funding-components/src';
 import { ZalgoPromise } from 'zalgo-promise/src';
 import { create, type ZoidComponent } from 'zoid/src';
@@ -322,7 +323,14 @@ export const getButtonsComponent = memoize(() : ZoidComponent<ButtonProps> => {
                 queryParam: true,
                 value:      getDisableFunding
             },
-            
+
+            enableFunding: {
+                type:       'array',
+                queryParam: true,
+                value:      getEnableFunding
+
+            },
+ 
             disableCard: {
                 type:       'array',
                 queryParam: true,
@@ -411,6 +419,14 @@ export const getButtonsComponent = memoize(() : ZoidComponent<ButtonProps> => {
 
     const instances = [];
 
+    function getEnableFunding() : $ReadOnlyArray<?$Values<typeof FUNDING>> {
+        const funding = getSDKQueryParam('enable-funding');
+        if (funding) {
+            return funding.split(',');
+        }
+        return [];
+    }
+
     const ButtonsWrapper = (props = {}) => {
         // eslint-disable-next-line prefer-const
         let instance;
@@ -434,9 +450,10 @@ export const getButtonsComponent = memoize(() : ZoidComponent<ButtonProps> => {
             const platform           = getPlatform();
             const fundingEligibility = getRefinedFundingEligibility();
             const components         = getComponents();
+            const enableFunding      = getEnableFunding();
 
             if (fundingSource) {
-                return isFundingEligible(fundingSource, { layout, platform, fundingSource, fundingEligibility, components, onShippingChange });
+                return isFundingEligible(fundingSource, { layout, platform, fundingSource, fundingEligibility, components, onShippingChange, enableFunding });
             }
 
             return true;
